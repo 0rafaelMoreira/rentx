@@ -1,4 +1,5 @@
-import React from 'react';
+import React ,{ useRef, useState } from 'react';
+import { FlatList, ViewToken } from 'react-native';
 
 import {
     Container,
@@ -8,27 +9,57 @@ import {
     CarImage,
 } from './styles';
 
+
 interface Props {
     imagesURL: string[];
 
 }
 
+interface ChangeImageProps {
+    viewableItems: ViewToken[];
+    changed: ViewToken[];
+}
+
 export function ImageSlider({imagesURL}: Props){
+    const [imageIndex, setImageIndex] = useState(0);
+    const indexChanged = useRef((info : ChangeImageProps)=> {
+    const index = info.viewableItems[0].index!;
+    setImageIndex(index);
+    });
+
+
     return (
         <Container>
             <ImageIndexes>
-                <ImageIndex active={true} />
-                <ImageIndex active={false} />
-                <ImageIndex active={false} />
-                <ImageIndex active={false} />  
+                { 
+                   imagesURL.map((_, index) => (
+                        <ImageIndex 
+                        key={String(index)}
+                        active={index === imageIndex} 
+                        
+                        />
+                   ))
+                }
+               
             </ImageIndexes>
         
-            <CarImageWrapper>
-                <CarImage
-                    source={{uri :  imagesURL[0]}}
-                    resizeMode="contain"
+            
+                <FlatList 
+                data={imagesURL}
+                keyExtractor={key => key}
+                renderItem={({ item })=>(
+                    <CarImageWrapper>
+                    <CarImage
+                        source={{uri : item}}
+                        resizeMode="contain"
+                    />
+                    </CarImageWrapper>
+                    )}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    onViewableItemsChanged={indexChanged.current}
                 />
-            </CarImageWrapper>
+            
         </Container>
     );
 }
